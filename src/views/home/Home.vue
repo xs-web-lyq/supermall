@@ -1,63 +1,18 @@
 <template>
   <div id="home">
     <NavBar class="navbar"><div slot="center">购物车</div></NavBar>
-    <HomeSwiper :banners="banners"></HomeSwiper>
-    <Suggest :recommends="recommends"></Suggest>
-    <FeatureView></FeatureView>
-    <TabControl :tabList="['流行','精选','新款']" @tabClick="tabClick"></TabControl>
-    <GoodsList :goodsList="showList"></GoodsList>
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>0</li>
-         <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>0</li>
-         <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>0</li>
-         <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>0</li>
-         <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>0</li>
-    </ul>
+    <Scroll class="wrapper" 
+            ref="scroll" 
+            @scroll="scrollWrapper" 
+            :pr-type="3" 
+            :pull-up-load="true" @pullUpLoad="loadMore">
+      <HomeSwiper :banners="banners"></HomeSwiper>
+      <Suggest :recommends="recommends"></Suggest>
+      <FeatureView></FeatureView>
+      <TabControl :tabList="['流行','精选','新款']" @tabClick="tabClick"></TabControl>
+      <GoodsList :goodsList="showList"></GoodsList>
+    </Scroll>
+    <BackTop @click.native="backTop" v-show="isShow"></BackTop>
   </div>
 </template>
 
@@ -70,6 +25,8 @@ import HomeSwiper from './childComps/HomeSwiper'
 import Suggest from './childComps/Suggest.vue'
 import FeatureView from './childComps/FeatureView.vue'
 import GoodsList from '@/components/context/goods/GoodsList'
+import Scroll from 'components/common/scroll/Scroll.vue'
+import BackTop from '@/components/context/backTop/BackTop'
 
 
 import {getHomeMultidata,getHomeData} from 'network/home.js'
@@ -86,7 +43,8 @@ export default {
           'new':{page:0,list:[]},
           'sell':{page:0,list:[]}
         },
-        currentType:'pop'
+        currentType:'pop',
+        isShow:false,
       }
     },
     components: {
@@ -96,13 +54,23 @@ export default {
     Suggest,
     FeatureView,
     TabControl,
-    GoodsList
+    GoodsList,
+    Scroll,
+    BackTop,
     },
     created(){
       this.getHomeMultidata()
       this.getHomeData('pop')
       this.getHomeData('sell')
       this.getHomeData('new')
+
+     
+    },
+    mounted(){
+      // 监听图片加载
+      this.$bus.$on('imgLoad',()=>{
+        this.$refs.scroll.refresh()
+      })
     },
     computed:{
       showList(){
@@ -127,6 +95,15 @@ export default {
             break
         }
       },
+      backTop(){
+        this.$refs.scroll.scrollTo(0,0)
+      },
+      scrollWrapper(position){
+        this.isShow = (-position.y) > 1000
+      },
+      loadMore(){
+        this.getHomeData(this.currentType)
+      },
 
       /**
        * 网络请求相关
@@ -142,15 +119,18 @@ export default {
         getHomeData(type,page).then(res => {
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page += 1;
+        this.$refs.scroll.finishPullUp()
       })
       }
     }
 }
 </script>
 
-<style>
+<style scoped>
   #home { 
-    padding-top:44px;
+    /* padding-top:44px; */
+    height:100vh;
+    position: relative;
    }
   .navbar {
     background: pink;
@@ -161,5 +141,12 @@ export default {
     right:0;
     z-index: 9;
   }
- 
+ .wrapper {
+  position:absolute;
+  top:44px;
+  bottom: 49px;
+  left:0;
+  right:0;
+  overflow: hidden;
+ }
 </style>
