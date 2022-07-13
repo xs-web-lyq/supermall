@@ -36,17 +36,14 @@ a {
   text-decoration: none;
 }
 
-.clear-fix::after {
-  clear: both;
+.clear-fix::after,.clear-fix::before {
   content: '';
   display: block;
-  width: 0;
-  height: 0;
   visibility: hidden;
 }
 
 .clear-fix {
-  zoom: 1;
+  clear:both
 }
 
 .left {

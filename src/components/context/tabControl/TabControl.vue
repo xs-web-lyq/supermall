@@ -5,7 +5,7 @@
             :key="index"
             @click="itemClick(index)"
         >
-            <span :class="{active: current == index}">{{item}}</span>
+            <span :class="{active: currentIndex == index}">{{item}}</span>
         </div>
   </div>
 </template>
@@ -16,19 +16,19 @@ export default {
     props:["tabList"],
     data(){
         return {
-            current:0,
+            currentIndex:0,
         }
     },
     methods:{
         itemClick(index){
-            this.current = index;
+            this.currentIndex = index;
             this.$emit('tabClick',index)
         }
     }
 }
 </script>
 
-<style>
+<style scoped>
     .tabControl {
         display: flex;
         height:44px;
